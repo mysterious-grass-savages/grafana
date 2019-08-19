@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+data:
+  # Grafana's main configuration file. To learn more about the configuration options available to you, 
+  # consult https://grafana.com/docs/installation/configuration
+  grafana.ini: |
+    [server]
+    domain = mysterious-grass-savages.github
+    root_url = %(protocol)s://%(domain)s:%(http_port)s/grafana
+    serve_from_sub_path = true
+    
