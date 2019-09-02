@@ -1,59 +1,54 @@
-local app = "grafana";
-local port = 3000;
-local servicePortType = "ClusterIP";
-local host = "mysterious-grass-savages.github";
-local namespace = "default";
+local grafana_vars = import 'grafana-vars.libsonnet';
+local portType(type = "ClusterIP") = type;
 
 {
-
     "deployment.json": {
+        environments: [
+            {
+                volumeMounts: env,
+
+            }
+            for env in grafana_vars.volumeMounts
+    ], 
         "apiVersion": "apps/v1",
         "kind": "Deployment",
         "metadata": {
-            "name": "grafana-deployment",
+            "name": grafana_vars["app"] + "-deployment",
             "labels": {
-                "app": "grafana"
+                "app": grafana_vars["app"]
             }
         },
         "spec": {
             "replicas": 1,
             "selector": {
                 "matchLabels": {
-                    "app": app
+                    "app": grafana_vars["app"]
                 }
             },
             "template": {
                 "metadata": {
                     "labels": {
-                        "app": app
+                        "app": grafana_vars["app"]
                     }
                 },
                 "spec": {
                     "containers": [
                         {
-                            "name": app,
-                            "image": "grafana/grafana:6.3.5",
+                            "name": grafana_vars["app"],
+                            "image": grafana_vars["image"],
                             "ports": [
                                 {
-                                    "containerPort": port
+                                    "containerPort": grafana_vars.port
                                 }
                             ],
-                            "volumeMounts": [
-                                {
-                                    "name": "grafana-config",
-                                    "mountPath": "/etc/grafana/grafana.ini",
-                                    "subPath": "grafana.ini"
-                                }
-                            ]
+                            
+                            [if 'volumeMounts' in grafana_vars && std.length(grafana_vars.volumeMounts) > 0 then "volumeMounts"]: [ item
+                                for item in grafana_vars.volumeMounts
+                            ],
                         }
                     ],
-                    "volumes": [
-                        {
-                            "name": "grafana-config",
-                            "configMap": {
-                                "name": "grafana-config"
-                            }
-                        }
+                    [if 'volumes' in grafana_vars && std.length(grafana_vars.volumes) > 0 then "volumes"]: [ item
+                            for item in grafana_vars.volumes
                     ]
                 }
             }
@@ -63,20 +58,20 @@ local namespace = "default";
         apiVersion: "v1",
         kind: "Service",
         metadata: {
-            name: app + "-service"
+            name: grafana_vars["app"] + "-service"
         },
         spec: {
             selector: {
-                app: app
+                app: grafana_vars["app"]
             },
             ports: [
                 {
                     protocol: "TCP",
-                    port: port,
-                    targetPort: port
+                    port: grafana_vars["port"],
+                    targetPort: grafana_vars["port"]
                 },
             ],
-            type: servicePortType,
+            type: portType(),
         },
     },
 
@@ -84,20 +79,20 @@ local namespace = "default";
         "apiVersion": "extensions/v1beta1",
         "kind": "Ingress",
         "metadata": {
-            "name": app + "-ingress",
-            "namespace": namespace,
+            "name": grafana_vars["app"] + "-ingress",
+            "namespace": grafana_vars["namespace"] ,
         },
         "spec": {
             "rules": [
                 {
-                    "host": host,
+                    "host": grafana_vars["host"],
                     "http": {
                         "paths": [
                             {
-                                "path": "/" + app + "/",
+                                "path": grafana_vars.url,
                                 "backend": {
-                                    "serviceName": app + "-service",
-                                    "servicePort": port
+                                    "serviceName": grafana_vars["app"] + "-service",
+                                    "servicePort": grafana_vars["port"] 
                                 }
                             }
                         ]
