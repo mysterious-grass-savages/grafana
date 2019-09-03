@@ -3,13 +3,28 @@
 local grafana_vars = import 'grafana-vars.libsonnet';
 local portType(type = "ClusterIP") = type;
 
+local conditionalReturn(cond, in1, in2=grafana_vars) =
+    if (!cond) then
+        std.trace(std.toString(in1), in2);
+
 // Top level arguement to set environment - DEV, SIT, UAT, PROD
 // @param env Name of environment the template has been generated for
 function(env = "dev") {
     env: env,
 }
 
+
 {
+    '': conditionalReturn(std.length(grafana_vars["app"]) > 0, 
+                            "app is empty"),
+    ' ': conditionalReturn(grafana_vars["port"] > 100, 
+                            "port is less than 100"),
+    '  ': conditionalReturn(std.length(grafana_vars["namespace"]) > 0 && (grafana_vars["namespace"] != "default"), 
+                            "namespace is either empty or using default"),
+    '   ': conditionalReturn(std.length(grafana_vars["image"]) > 0, 
+                            "image tag is not supplied"),
+    '    ': conditionalReturn(std.length(grafana_vars["url"]) > 0, 
+                            "url is blank"),
     //-- DEPLOYMENT --
     "deployment.json": {
         "apiVersion": "apps/v1",
