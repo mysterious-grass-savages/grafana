@@ -1,21 +1,18 @@
 local grafana_vars = import 'grafana-vars.libsonnet';
 local portType(type = "ClusterIP") = type;
+function(env = "dev") {
+    env: env
+}
 
 {
     "deployment.json": {
-        environments: [
-            {
-                volumeMounts: env,
-
-            }
-            for env in grafana_vars.volumeMounts
-    ], 
         "apiVersion": "apps/v1",
         "kind": "Deployment",
         "metadata": {
             "name": grafana_vars["app"] + "-deployment",
             "labels": {
-                "app": grafana_vars["app"]
+                "app": grafana_vars["app"],
+                "environment": env,
             }
         },
         "spec": {
@@ -42,12 +39,12 @@ local portType(type = "ClusterIP") = type;
                                 }
                             ],
                             
-                            [if 'volumeMounts' in grafana_vars && std.length(grafana_vars.volumeMounts) > 0 then "volumeMounts"]: [ item
+                            [if std.objectHas(grafana_vars, 'volumeMounts') && std.length(grafana_vars.volumeMounts) > 0 then "volumeMounts"]: [ item
                                 for item in grafana_vars.volumeMounts
                             ],
                         }
                     ],
-                    [if 'volumes' in grafana_vars && std.length(grafana_vars.volumes) > 0 then "volumes"]: [ item
+                    [if std.objectHas(grafana_vars, 'volumes') && std.length(grafana_vars.volumes) > 0 then "volumes"]: [ item
                             for item in grafana_vars.volumes
                     ]
                 }
