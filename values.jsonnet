@@ -1,10 +1,16 @@
+//Conventions - https://github.com/databricks/jsonnet-style-guide
+
 local grafana_vars = import 'grafana-vars.libsonnet';
 local portType(type = "ClusterIP") = type;
+
+// Top level arguement to set environment - DEV, SIT, UAT, PROD
+// @param env Name of environment the template has been generated for
 function(env = "dev") {
-    env: env
+    env: env,
 }
 
 {
+    //-- DEPLOYMENT --
     "deployment.json": {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
@@ -42,6 +48,9 @@ function(env = "dev") {
                             [if std.objectHas(grafana_vars, 'volumeMounts') && std.length(grafana_vars.volumeMounts) > 0 then "volumeMounts"]: [ item
                                 for item in grafana_vars.volumeMounts
                             ],
+                            [if std.objectHas(grafana_vars, 'env') && std.length(grafana_vars.volumeMounts) > 0 then "env"]: [ item
+                                for item in grafana_vars.env
+                            ],
                         }
                     ],
                     [if std.objectHas(grafana_vars, 'volumes') && std.length(grafana_vars.volumes) > 0 then "volumes"]: [ item
@@ -51,6 +60,7 @@ function(env = "dev") {
             }
         }
     },
+    //-- SERVICE --
     "service.json": {
         apiVersion: "v1",
         kind: "Service",
@@ -72,7 +82,9 @@ function(env = "dev") {
         },
     },
 
+    //-- INGRESS --
     "ingress.json": {
+        local hostPrefix = if (env == "PROD") then "foo.github" else "mysterious-grass-savages.github",
         "apiVersion": "extensions/v1beta1",
         "kind": "Ingress",
         "metadata": {
@@ -82,7 +94,7 @@ function(env = "dev") {
         "spec": {
             "rules": [
                 {
-                    "host": grafana_vars["host"],
+                    "host": hostPrefix,
                     "http": {
                         "paths": [
                             {

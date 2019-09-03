@@ -1,7 +1,6 @@
 {
     app: "grafana",
     port: 3000,
-    host: "mysterious-grass-savages.github",
     namespace: "default",
     image: "grafana/grafana:6.3.5",
     url: "/grafana/",
@@ -11,12 +10,7 @@
             "mountPath": "/etc/grafana/grafana.ini",
             "name": "grafana-config",
             "subPath": "grafana.ini"
-        },
-        {
-            "mountPath": "/etc/grafana/custom.ini",
-            "name": "grafana-config2",
-            "subPath": "custom.ini"   
-        },
+        }
     ],
     "volumes": [
         {
@@ -26,4 +20,15 @@
             }
         }
     ],
+    "env": [
+        {
+            "name": "DEMO_GREETING",
+            "value": "Hello from the environment"
+        },
+        {
+            "name": "DEMO_FAREWELL",
+            "value": "Such a sweet sorrow"
+        }
+    ]
+
 }
