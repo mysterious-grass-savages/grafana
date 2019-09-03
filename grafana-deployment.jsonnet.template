@@ -1,6 +1,6 @@
 local serviceDeployment = import "service-deployment-ingress.jsonnet.TEMPLATE";
 
-serviceDeployment + {
+local grafana() = serviceDeployment + {
     serviceName:: "grafana",
     dockerImage:: "grafana/grafana:6.3.5",
     servicePort:: 3000,
@@ -31,4 +31,9 @@ serviceDeployment + {
             }
         }
     ],
+};
+
+// Export the function as a constructor for shards
+{
+  grafana:: grafana,
 }
