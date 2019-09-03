@@ -1,4 +1,5 @@
 //Conventions - https://github.com/databricks/jsonnet-style-guide
+//Guide - https://databricks.com/blog/2017/06/26/declarative-infrastructure-jsonnet-templating-language.html
 
 local grafana_vars = import 'grafana-vars.libsonnet';
 local portType(type = "ClusterIP") = type;
